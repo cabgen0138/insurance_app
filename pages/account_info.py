@@ -75,11 +75,7 @@ def validate_submission(
             "the submission date; account cannot be reserved at this time."
         )
     
-    # Building and roof age checks
-    building_age = today.year - year_built
-    roof_age = today.year - roof_replacement
-    
-    # TIV checks - Corrected garden-style validation
+    # TIV checks - Primary validation
     if tiv < 5_000_000:
         decline_reasons.append("TIV < $5M: TIV is less than $5,000,000")
     elif stories <= 3 and tiv > 60_000_000:  # Garden-style (1-3 stories)
@@ -90,17 +86,21 @@ def validate_submission(
     elif tiv > 100_000_000:  # High-rise TIV check
         decline_reasons.append("TIV > $100M: Per premises TIV exceeds $100M")
     
-    # Add age-related decline reasons
-    if building_age > 30:
-        decline_reasons.append(
-            "Building Age/Updates: Building age(s) exceeds 30 years and there is "
-            "insufficient documentation confirming adequate building updates."
-        )
-    if roof_age > 15:
-        decline_reasons.append(
-            "Roof Age/Updates: Roof age(s) exceeds 15 years and there is "
-            "insufficient documentation confirming adequate roof condition."
-        )
+    # Only add age-related decline reasons if there are TIV issues
+    building_age = today.year - year_built
+    roof_age = today.year - roof_replacement
+    
+    if decline_reasons:  # Only check ages if already declining for other reasons
+        if building_age > 30:
+            decline_reasons.append(
+                "Building Age/Updates: Building age(s) exceeds 30 years and there is "
+                "insufficient documentation confirming adequate building updates."
+            )
+        if roof_age > 15:
+            decline_reasons.append(
+                "Roof Age/Updates: Roof age(s) exceeds 15 years and there is "
+                "insufficient documentation confirming adequate roof condition."
+            )
     
     return decline_reasons
 

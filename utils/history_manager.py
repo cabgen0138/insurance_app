@@ -7,22 +7,39 @@ def initialize_history():
         st.session_state.submission_history = []
 
 def clear_submission_data():
-    """Clear all submission-related data from session state"""
-    # List of keys to preserve
-    keys_to_keep = ['submission_history']
+    """Clear all submission-related data from session state while preserving history"""
+    # Get current history
+    current_history = st.session_state.get('submission_history', [])
     
-    # Store values of keys we want to keep
-    preserved_values = {key: st.session_state[key] for key in keys_to_keep if key in st.session_state}
+    # List of all submission-related keys we want to clear
+    submission_keys = [
+        'step',
+        'effective_date',
+        'association_name',
+        'agency',
+        'county',
+        'region',
+        'year_built',
+        'roof_replacement',
+        'stories',
+        'tiv',
+        'construction_type',
+        'outdoor_property_tiv',
+        'showing_decline_reasons',
+        'needs_referral',
+        'submission_status'
+    ]
     
-    # Clear session state
-    st.session_state.clear()
-    
-    # Restore preserved values
-    for key, value in preserved_values.items():
-        st.session_state[key] = value
+    # Clear only submission-related keys
+    for key in submission_keys:
+        if key in st.session_state:
+            del st.session_state[key]
     
     # Reset step to 1
     st.session_state.step = 1
+    
+    # Restore history
+    st.session_state.submission_history = current_history
 
 def add_to_history(association_name, agency, status):
     """Add a submission to the history"""
