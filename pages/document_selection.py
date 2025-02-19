@@ -10,7 +10,7 @@ from email_generators import (
     generate_not_cleared_email,
     generate_reserved_email
 )
-from main_app import add_to_history
+from utils.history_manager import add_to_history
 
 def get_pipeline_data(
     effective_date: date,

@@ -1,7 +1,9 @@
 import streamlit as st
+from datetime import datetime
 from pages.account_info import render_step1
 from pages.document_selection import render_step2
 from datetime import datetime
+from utils.history_manager import initialize_history, clear_submission_data
 
 def initialize_history():
     """Initialize submission history in session state if it doesn't exist"""
@@ -65,7 +67,7 @@ def render_sidebar():
 
 def main():
     st.set_page_config(
-        page_title="Insurance Submission Clearance",
+        page_title="Cabrillo Submission Clearance",
         page_icon="📋",
         layout="wide"
     )
@@ -80,7 +82,7 @@ def main():
     render_sidebar()
     
     # Main content
-    st.title("Insurance Submission Clearance")
+    st.title("Cabrillo Submission Clearance")
     
     # Render appropriate step
     if st.session_state.step == 1:

@@ -4,7 +4,7 @@ from models import PropertySubmission
 from config import (AGENCIES, COUNTIES, CONSTRUCTION_TYPES, DECLINE_REASONS, get_region_for_county)
 from email_generators.declined import generate_declined_email
 from email_generators.referral import generate_referral_email
-from main_app import add_to_history
+from utils.history_manager import add_to_history
 
 def initialize_session_state():
     """Initialize session state variables if they don't exist"""
