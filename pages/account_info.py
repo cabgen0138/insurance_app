@@ -4,6 +4,7 @@ from models import PropertySubmission
 from config import (AGENCIES, COUNTIES, CONSTRUCTION_TYPES, DECLINE_REASONS, get_region_for_county)
 from email_generators.declined import generate_declined_email
 from email_generators.referral import generate_referral_email
+from main_app import add_to_history
 
 def initialize_session_state():
     """Initialize session state variables if they don't exist"""
@@ -256,6 +257,7 @@ def render_step1():
                     county=county
                 )
                 st.info("### Submission Outcome: Referred to Manager")
+                add_to_history(association_name, agency, "Referred to Manager")
                 st.text("Email Subject:")
                 st.text(email_data['subject'])
                 st.text("Email Body:")
@@ -266,6 +268,7 @@ def render_step1():
                 
         elif decline_button:
             st.session_state.showing_decline_reasons = True
+            add_to_history(association_name, agency, "Declined")
             
         else:
             # Check for auto-decline conditions with updated validation
@@ -295,6 +298,7 @@ def render_step1():
                     selected_reasons=decline_reasons
                 )
                 st.error("### Submission Outcome: Declined")
+                add_to_history(association_name, agency, "Declined")
                 st.text_area("Generated Email", email_body, height=400)
             else:
                 st.session_state.step = 2
