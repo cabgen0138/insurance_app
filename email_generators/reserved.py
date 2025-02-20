@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta
 from typing import Dict
+from utils.premium_utils import get_missing_premiums_text
 
 def generate_reserved_email(
     association_name: str,
@@ -14,20 +15,6 @@ def generate_reserved_email(
 ) -> str:
     """
     Generate a reserved status email with document requirements and deadlines
-    
-    Args:
-        association_name: Name of the association
-        agency: Agency name
-        year_built: Year the property was built
-        roof_replacement: Year of last roof replacement
-        stories: Number of stories
-        county: Property county
-        received_docs: Dictionary of required documents and their receipt status
-        received_additional_docs: Dictionary of additional documents and their receipt status
-        effective_date: Requested effective date
-    
-    Returns:
-        str: Formatted email body
     """
     today = datetime.today()
     
@@ -50,13 +37,17 @@ def generate_reserved_email(
     else:
         deadline_text = "as soon as possible"
 
-    # Get list of missing additional documents
+    # Get list of missing additional documents (excluding premiums)
     missing_additional_docs = [doc for doc, received in received_additional_docs.items() 
-                             if not received]
+                             if not received and not any(premium in doc for premium in 
+                             ["Target Premium", "Renewal Premium", "Expiring Premium"])]
 
-    email_body = """Hi,
+    # Get missing premiums text
+    missing_premiums = get_missing_premiums_text(received_additional_docs)
 
-Thank you for your submission of the above referenced account. This account has been reserved for your agency and is awaiting underwriting review."""
+    email_body = f"""Hi,
+
+Thank you for your submission of the above referenced account for {association_name}. This account has been reserved for your agency and is awaiting underwriting review."""
 
     # Add preferred commission tier message if eligible
     if year_built >= 1994 and roof_replacement >= 2010:
@@ -66,14 +57,19 @@ Based on the risk characteristics, it appears that this account may qualify for 
 Eligibility for the preferred commission tier will be confirmed during the underwriting process."""
 
     # Add missing document requirements if any
-    if missing_additional_docs:
+    if missing_additional_docs or missing_premiums:
         email_body += """
 
 The following additional documents are needed to proceed with the quote review process. The starred items are required to quote. Please send at your earliest convenience."""
         
+        # Add non-premium missing documents
         for doc in missing_additional_docs:
             doc_title = doc.split(':')[0].strip()
             email_body += f"\n• {doc_title}"
+
+        # Add missing premiums if any
+        if missing_premiums:
+            email_body += f"\n{missing_premiums}"
 
         if deadline_text == "as soon as possible":
             email_body += f"""

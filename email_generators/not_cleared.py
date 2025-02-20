@@ -1,8 +1,6 @@
-"""
-Generator for not cleared submission emails
-"""
 from datetime import datetime
 from typing import Dict, List
+from utils.premium_utils import get_missing_premiums_text
 
 def consolidate_years(missing_loss_runs: List[str]) -> str:
     """
@@ -90,14 +88,25 @@ The following additional documents are needed to reserve the account. Please sen
 
     # Handle additional documents
     missing_additional_docs = [doc for doc, received in received_additional_docs.items() 
-                             if not received]
-    if missing_additional_docs:
+                             if not received and not any(premium in doc for premium in 
+                             ["Target Premium", "Renewal Premium", "Expiring Premium"])]
+    
+    # Get missing premiums text
+    missing_premiums = get_missing_premiums_text(received_additional_docs)
+    
+    if missing_additional_docs or missing_premiums:
         email_body += """
 
 If reserved, we will request the additional items outlined below. Please be aware that starred items are required to confirm eligibility. 
 Please let us know at your earliest opportunity if these items are not available."""
+        
+        # Add non-premium missing documents
         for doc in missing_additional_docs:
             email_body += f"\n• {doc}"
+            
+        # Add missing premiums if any
+        if missing_premiums:
+            email_body += f"\n{missing_premiums}"
 
     email_body += """
 
