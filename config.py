@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 # Agency and location constants
 AGENCIES = [
@@ -23,25 +23,23 @@ COUNTIES = [
     "Walton", "Washington"
 ]
 
+CONSTRUCTION_TYPES = ["Frame", "JM", "NC", "MNC", "MFR", "FR"]
+
+# Region mapping
 REGION_COUNTY_MAPPING = {
-    "Big Bend": ["Alachua", "Bradford", "Citrus", "Columbia", "Dixie", "Gilchrist", "Hamilton", "Lafayette", "Levy", "Marion", "Suwannee", "Taylor", "Union"],
+    "Big Bend": ["Alachua", "Bradford", "Citrus", "Columbia", "Dixie", "Gilchrist", "Hamilton", 
+                 "Lafayette", "Levy", "Marion", "Suwannee", "Taylor", "Union"],
     "Northeast": ["Baker", "Clay", "Duval", "Flagler", "Nassau", "Putnam", "St. Johns"],
-    "Panhandle": ["Bay", "Calhoun", "Escambia", "Franklin", "Gadsden", "Gulf", "Holmes", "Jackson", "Jefferson", "Leon", "Liberty", "Madison", "Okaloosa", "Santa Rosa", "Wakulla", "Walton", "Washington"],
+    "Panhandle": ["Bay", "Calhoun", "Escambia", "Franklin", "Gadsden", "Gulf", "Holmes", "Jackson", 
+                  "Jefferson", "Leon", "Liberty", "Madison", "Okaloosa", "Santa Rosa", "Wakulla", 
+                  "Walton", "Washington"],
     "Space Coast": ["Brevard", "Indian River", "Martin", "St. Lucie", "Volusia"],
     "Tri-County": ["Broward", "Miami-Dade", "Monroe", "Palm Beach"],
     "Southwest": ["Charlotte", "Collier", "Desoto", "Glades", "Hendry", "Lee"],
     "Tampa/St Pete": ["Hernando", "Hillsborough", "Manatee", "Pasco", "Pinellas", "Sarasota"],
-    "Central": ["Hardee", "Highlands", "Lake", "Okeechobee", "Orange", "Osceola", "Polk", "Seminole", "Sumter"]
+    "Central": ["Hardee", "Highlands", "Lake", "Okeechobee", "Orange", "Osceola", "Polk", 
+                "Seminole", "Sumter"]
 }
-
-def get_region_for_county(county: str) -> str:
-    """Get the region name for a given county"""
-    for region, counties in REGION_COUNTY_MAPPING.items():
-        if county in counties:
-            return region
-    return "Unknown Region"
-
-CONSTRUCTION_TYPES = ["Frame", "JM", "NC", "MNC", "MFR", "FR"]
 
 # Basic required documents
 BASIC_REQUIRED_DOCS = ["Acord 125/140", "SOV", "Supplemental Application", "Appraisal"]
@@ -60,20 +58,12 @@ BASE_ADDITIONAL_DOCS = [
     ("Prior Claims Experience", "Our objective is to build a book of business with clients who are inclined to file a claim with us directly before engaging third party assistance. Please supply any additional information you feel pertinent to our evaluation of the applicant's prior claim experience.")
 ]
 
-# Loss runs by year
-def generate_loss_run_years():
-    current_year = datetime.today().year
-    years = []
-    # Start from 5 years ago
-    start_year = current_year - 5
-    while start_year < current_year:
-        years.append(f"Loss Runs {start_year}-{start_year + 1}")
-        start_year += 1
-    return years
-
-# Combine basic docs with loss run years
-REQUIRED_DOCS = BASIC_REQUIRED_DOCS + generate_loss_run_years()
-
+# Validation constants
+MIN_TIV = 5_000_000
+MAX_TIV = 100_000_000
+MAX_GARDEN_STYLE_TIV = 60_000_000
+MAX_FRAME_STORIES = 5
+MAX_EFFECTIVE_DATE_DAYS = 120
 
 # Decline reasons mapping
 DECLINE_REASONS = {
@@ -91,12 +81,74 @@ DECLINE_REASONS = {
     "Existing Damage": "Existing Damage: There is existing unrepaired damage that does not align with program guidelines.",
     "Limited Access": "Limited means of ingress/egress: Communities in areas with less than 2 means of ingress/egress do not align with underwriting appetite.",
     "Occupancy": "Occupancy: Properties with less than 50% residential occupancy do not meet program eligibility guidelines.",
-    "Additional Declination Reasons": "Additional Declination Reasons: Please be aware there may be additional factors influencing the reason for decline that were not identified in the initial review.  Resubmission of this account with additional information addressing the above referenced items may not necessarily result in the account being reopened and reserved."
+    "Additional Declination Reasons": "Additional Declination Reasons: Please be aware there may be additional factors influencing the reason for decline that were not identified in the initial review. Resubmission of this account with additional information addressing the above referenced items may not necessarily result in the account being reopened and reserved."
 }
 
-# Validation constants
-MIN_TIV = 5_000_000
-MAX_TIV = 100_000_000
-MAX_GARDEN_STYLE_TIV = 60_000_000
-MAX_FRAME_STORIES = 5
-MAX_EFFECTIVE_DATE_DAYS = 120
+# Functions
+def generate_loss_run_years():
+    """Generate list of required loss run years"""
+    current_year = datetime.today().year
+    years = []
+    # Start from 5 years ago
+    start_year = current_year - 5
+    while start_year < current_year:
+        years.append(f"Loss Runs {start_year}-{start_year + 1}")
+        start_year += 1
+    return years
+
+def get_region_for_county(county: str) -> str:
+    """Get the region name for a given county"""
+    for region, counties in REGION_COUNTY_MAPPING.items():
+        if county in counties:
+            return region
+    return "Unknown Region"
+
+def get_pipeline_data(
+    effective_date: date,
+    association_name: str,
+    agency: str,
+    region: str,
+    stories: int,
+    year_built: int,
+    tiv: float,
+    submission_status: str
+) -> str:
+    """
+    Format data for pipeline spreadsheet in a tab-separated format
+    """
+    # Determine status based on submission outcome
+    if submission_status == "Not Cleared - RFI":
+        pipeline_status = "Not Cleared - RFI"
+    elif submission_status == "Reserved":
+        pipeline_status = "Reserved - Pending Setup"
+    elif submission_status == "Not Cleared - OOA":
+        pipeline_status = "Not Cleared - OOA"
+    else:
+        pipeline_status = ""
+
+    # Format TIV with commas and no decimals
+    formatted_tiv = f"${tiv:,.0f}"
+    
+    # Create tab-separated string with all fields
+    pipeline_data = [
+        effective_date.strftime("%m/%d/%Y"),  # Effective Date
+        association_name,                      # Insured
+        agency,                               # Agent (matches dropdown)
+        region,                               # Region (matches dropdown)
+        str(stories),                         # # Stories
+        "",                                   # Type (skip)
+        str(year_built),                      # Year Built
+        formatted_tiv,                        # TIV
+        "",                                   # Premium (skip)
+        "",                                   # Rate (skip)
+        "",                                   # Pr(Bind) (skip)
+        "",                                   # Carrier (skip)
+        "",                                   # Underwriter
+        "",                                   # Need By
+        pipeline_status                       # Status (matches dropdown)
+    ]
+    
+    return "\t".join(pipeline_data)
+
+# Combine basic docs with loss run years
+REQUIRED_DOCS = BASIC_REQUIRED_DOCS + generate_loss_run_years()
