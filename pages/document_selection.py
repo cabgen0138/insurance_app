@@ -92,6 +92,7 @@ def render_step2():
     col1, col2 = st.columns(2)
     
     with col1:
+        st.write(f"**Effective Date:** {st.session_state.effective_date.strftime('%m/%d/%Y')}")
         st.write(f"**Association:** {st.session_state.association_name}")
         st.write(f"**Agency:** {st.session_state.agency}")
         st.write(f"**County:** {st.session_state.county}")
@@ -141,7 +142,7 @@ def render_step2():
                 
         else:
             # Step 2: Show selected documents and additional documents
-            st.subheader("Selected Documents")
+            st.subheader("Select Received Documents")
             
             # Display which initial documents were selected
             st.write("Initial documents received:")
@@ -156,7 +157,7 @@ def render_step2():
             st.markdown("---")
             
             # Additional Documents section
-            st.subheader("Additional Documents")
+            st.subheader("Additional Documents Received")
             has_supplemental = st.session_state.basic_docs.get("Supplemental Application", False)
             additional_docs = get_additional_docs(has_supplemental)
             received_additional_docs = {}

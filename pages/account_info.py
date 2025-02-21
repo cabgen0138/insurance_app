@@ -240,11 +240,14 @@ def render_step1():
             'tiv': tiv,
             'construction_type': construction_type,
             'outdoor_property_tiv': outdoor_property_tiv,
-            'needs_referral': tiv > 100_000_000  # Only refer for high-rise over $100M
+            'needs_referral': tiv > 100_000_000 or (stories <= 3 and tiv > 60_000_000)
         })
         
         if referral_button:
             if st.session_state.needs_referral:
+                # Get region from county
+                region = get_region_for_county(county)
+
                 email_data = generate_referral_email(
                     association_name=association_name,
                     agency=agency,
@@ -254,7 +257,8 @@ def render_step1():
                     year_built=year_built,
                     roof_replacement=roof_replacement,
                     tiv=tiv,
-                    county=county
+                    county=county,
+                    region=region
                 )
                 st.info("### Submission Outcome: Referred to Manager")
                 add_to_history(association_name, agency, "Referred to Manager")
