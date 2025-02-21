@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, List
 from utils.premium_utils import get_missing_premiums_text
+from utils.document_utils import sort_additional_docs, format_premium_text
 
 def consolidate_years(missing_loss_runs: List[str]) -> str:
     """
@@ -51,6 +52,8 @@ def generate_not_cleared_email(
     """
     Generate a not cleared email listing missing documents and requirements
     """
+    from utils.document_utils import sort_additional_docs, format_premium_text
+    
     email_body = f"""Hi,
 
 Thank you for your submission of the above referenced account for {association_name}."""
@@ -91,22 +94,33 @@ The following additional documents are needed to reserve the account. Please sen
                              if not received and not any(premium in doc for premium in 
                              ["Target Premium", "Renewal Premium", "Expiring Premium"])]
     
-    # Get missing premiums text
-    missing_premiums = get_missing_premiums_text(received_additional_docs)
-    
-    if missing_additional_docs or missing_premiums:
+    # Check for missing premiums
+    premium_docs = ["Target Premium", "Renewal Premium", "Expiring Premium"]
+    premiums_missing = any(
+        not received_additional_docs.get(doc, False) 
+        for doc in received_additional_docs 
+        if any(premium in doc for premium in premium_docs)
+    )
+
+    if missing_additional_docs or premiums_missing:
         email_body += """
 
 If reserved, we will request the additional items outlined below. Please be aware that starred items are required to confirm eligibility. 
 Please let us know at your earliest opportunity if these items are not available."""
+
+        # Get sorted documents
+        sorted_docs = sort_additional_docs(missing_additional_docs)
         
-        # Add non-premium missing documents
-        for doc in missing_additional_docs:
+        # Process documents in order with premium insertion
+        for doc in sorted_docs:
+            doc_name = doc.split(':')[0].strip()
+            
+            # Add the document
             email_body += f"\n• {doc}"
             
-        # Add missing premiums if any
-        if missing_premiums:
-            email_body += f"\n{missing_premiums}"
+            # Add premiums after Flood Policy
+            if premiums_missing and doc_name == "Flood Policy":
+                email_body += "\n• Target, Renewal and Expiring Premiums"
 
     email_body += """
 

@@ -1,6 +1,7 @@
 from datetime import datetime, date, timedelta
 from typing import Dict
 from utils.premium_utils import get_missing_premiums_text
+from utils.document_utils import sort_additional_docs, format_premium_text
 
 def generate_reserved_email(
     association_name: str,
@@ -16,6 +17,8 @@ def generate_reserved_email(
     """
     Generate a reserved status email with document requirements and deadlines
     """
+    from utils.document_utils import sort_additional_docs, format_premium_text
+    
     today = datetime.today()
     
     if not isinstance(effective_date, datetime):
@@ -42,8 +45,13 @@ def generate_reserved_email(
                              if not received and not any(premium in doc for premium in 
                              ["Target Premium", "Renewal Premium", "Expiring Premium"])]
 
-    # Get missing premiums text
-    missing_premiums = get_missing_premiums_text(received_additional_docs)
+    # Check for missing premiums
+    premium_docs = ["Target Premium", "Renewal Premium", "Expiring Premium"]
+    premiums_missing = any(
+        not received_additional_docs.get(doc, False) 
+        for doc in received_additional_docs 
+        if any(premium in doc for premium in premium_docs)
+    )
 
     email_body = f"""Hi,
 
@@ -57,19 +65,24 @@ Based on the risk characteristics, it appears that this account may qualify for 
 Eligibility for the preferred commission tier will be confirmed during the underwriting process."""
 
     # Add missing document requirements if any
-    if missing_additional_docs or missing_premiums:
+    if missing_additional_docs or premiums_missing:
         email_body += """
 
 The following additional documents are needed to proceed with the quote review process. The starred items are required to quote. Please send at your earliest convenience."""
         
-        # Add non-premium missing documents
-        for doc in missing_additional_docs:
-            doc_title = doc.split(':')[0].strip()
-            email_body += f"\n• {doc_title}"
-
-        # Add missing premiums if any
-        if missing_premiums:
-            email_body += f"\n{missing_premiums}"
+        # Get sorted documents
+        sorted_docs = sort_additional_docs(missing_additional_docs)
+        
+        # Process documents in order with premium insertion
+        for doc in sorted_docs:
+            doc_name = doc.split(':')[0].strip()
+            
+            # Add the document
+            email_body += f"\n• {doc}"
+            
+            # Add premiums after Flood Policy
+            if premiums_missing and doc_name == "Flood Policy":
+                email_body += "\n• Target, Renewal and Expiring Premiums"
 
         if deadline_text == "as soon as possible":
             email_body += f"""

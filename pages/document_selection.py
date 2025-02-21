@@ -109,7 +109,7 @@ def render_step2():
     with st.form("document_selection_form"):
         if not st.session_state.showing_additional_docs:
             # Step 1: Initial Documents
-            st.subheader("Required Documents")
+            st.subheader("Received Required Documents")
             
             # Basic required documents
             basic_docs = {doc: st.checkbox(doc) for doc in BASIC_REQUIRED_DOCS}
