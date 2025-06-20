@@ -19,7 +19,6 @@ def initialize_session_state():
         'stories': 1,
         'tiv': 0.0,
         'construction_type': CONSTRUCTION_TYPES[0],
-        'outdoor_property_tiv': 0.0,
         'showing_decline_reasons': False,
         'needs_referral': False
     }
@@ -123,7 +122,6 @@ def show_decline_reasons_selection():
                 stories=st.session_state.stories,
                 construction_type=st.session_state.construction_type,
                 tiv=st.session_state.tiv,
-                outdoor_property_tiv=st.session_state.outdoor_property_tiv,
                 effective_date=st.session_state.effective_date,
                 required_docs={},
                 selected_reasons=selected_reasons
@@ -201,13 +199,6 @@ def render_step1():
                 value=st.session_state.tiv,
                 format="%.2f"
             )
-            
-            outdoor_property_tiv = st.number_input(
-                "Outdoor Property TIV (if applicable)",
-                min_value=0.0,
-                value=st.session_state.outdoor_property_tiv,
-                format="%.2f"
-            )
         
         # Form buttons
         col1, col2, col3, col4 = st.columns([1, 1, 1, 3])
@@ -239,7 +230,6 @@ def render_step1():
             'stories': stories,
             'tiv': tiv,
             'construction_type': construction_type,
-            'outdoor_property_tiv': outdoor_property_tiv,
             'needs_referral': tiv > 100_000_000 or (stories <= 3 and tiv > 60_000_000)
         })
         
@@ -296,7 +286,6 @@ def render_step1():
                     stories=stories,
                     construction_type=construction_type,
                     tiv=tiv,
-                    outdoor_property_tiv=outdoor_property_tiv,
                     effective_date=effective_date,
                     required_docs={},
                     selected_reasons=decline_reasons

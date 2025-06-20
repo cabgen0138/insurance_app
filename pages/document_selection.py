@@ -282,7 +282,6 @@ def show_decline_reasons_selection():
                 stories=st.session_state.stories,
                 construction_type=st.session_state.construction_type,
                 tiv=st.session_state.tiv,
-                outdoor_property_tiv=st.session_state.outdoor_property_tiv,
                 effective_date=st.session_state.effective_date,
                 required_docs={},
                 selected_reasons=selected_reasons

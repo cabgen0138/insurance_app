@@ -12,7 +12,6 @@ def generate_declined_email(
     stories: int,
     construction_type: str,
     tiv: float,
-    outdoor_property_tiv: float,
     effective_date: date,
     required_docs: Dict[str, bool],
     selected_reasons: Optional[List[str]] = None

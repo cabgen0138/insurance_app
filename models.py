@@ -18,7 +18,6 @@ class PropertySubmission:
     stories: int
     tiv: float
     construction_type: str
-    outdoor_property_tiv: float = 0.0
 
     def validate(self) -> List[str]:
         """
