@@ -24,7 +24,6 @@ def clear_submission_data():
         'stories',
         'tiv',
         'construction_type',
-        'outdoor_property_tiv',
         'showing_decline_reasons',
         'needs_referral',
         'submission_status'

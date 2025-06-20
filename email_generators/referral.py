@@ -44,8 +44,8 @@ We received this submission from {agency} and wanted to check if this is an acco
 {effective_date.strftime('%m/%d/%Y')} {association_name} located in the {region} region.
 {stories} story {construction_type} buildings built in {year_built}. {roof_status}
 TIV: {formatted_tiv}
-Age of buildings: {building_age} years ({current_year} - {year_built})
-Age of Roofs: {roof_age} years ({current_year} - {roof_replacement})
+Age of buildings: {building_age} years ({year_built})
+Age of Roofs: {roof_age} years ({roof_replacement})
 Address: 
 
 Please let me know if you'd like to move forward with this account or if you prefer that I decline it.

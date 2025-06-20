@@ -1,7 +1,5 @@
 from datetime import datetime, date, timedelta
 from typing import Dict
-from utils.premium_utils import get_missing_premiums_text
-from utils.document_utils import sort_additional_docs, format_premium_text
 
 def generate_reserved_email(
     association_name: str,
@@ -15,90 +13,79 @@ def generate_reserved_email(
     effective_date: date
 ) -> str:
     """
-    Generate a reserved status email with document requirements and deadlines
+    Generate a reserved status email with document requirements and deadlines.
+    Building Updates and Roof Condition Inspection always listed first (if missing),
+    then all other missing docs (including premiums) in the user's checkbox order.
     """
-    from utils.document_utils import sort_additional_docs, format_premium_text
-    
-    today = datetime.today()
-    
     if not isinstance(effective_date, datetime):
         effective_date = datetime.combine(effective_date, datetime.min.time())
-    
-    time_until_effective = effective_date - today
-    days_until_effective = time_until_effective.days
-    
-    # Determine deadline based on time until effective date
-    if days_until_effective >= 30:
+
+    today = datetime.today()
+    days_until = (effective_date - today).days
+
+    # Determine deadline text
+    if days_until >= 30:
         deadline = effective_date - timedelta(days=30)
         deadline_text = f"by **{deadline.strftime('%m/%d/%Y')}**"
-    elif days_until_effective >= 21:
+    elif days_until >= 21:
         deadline_text = f"by **{(today + timedelta(days=21)).strftime('%m/%d/%Y')}**"
-    elif days_until_effective >= 14:
+    elif days_until >= 14:
         deadline_text = f"by **{(today + timedelta(days=14)).strftime('%m/%d/%Y')}**"
-    elif days_until_effective >= 7:
+    elif days_until >= 7:
         deadline_text = f"by **{(today + timedelta(days=7)).strftime('%m/%d/%Y')}**"
     else:
         deadline_text = "as soon as possible"
 
-    # Get list of missing additional documents (excluding premiums)
-    missing_additional_docs = [doc for doc, received in received_additional_docs.items() 
-                             if not received and not any(premium in doc for premium in 
-                             ["Target Premium", "Renewal Premium", "Expiring Premium"])]
+    # Order logic: always start with priority items (if present), then all others in original checkbox order
+    priority_items = ["Building Updates", "Roof Condition Inspection"]
+    missing_additional = [doc for doc, rec in received_additional_docs.items() if not rec]
 
-    # Check for missing premiums
-    premium_docs = ["Target Premium", "Renewal Premium", "Expiring Premium"]
-    premiums_missing = any(
-        not received_additional_docs.get(doc, False) 
-        for doc in received_additional_docs 
-        if any(premium in doc for premium in premium_docs)
+    # Priority items in order, if missing
+    priority_to_list = [item for item in priority_items if item in missing_additional]
+    # All other missing items in checkbox order, excluding priority items
+    rest_to_list = [doc for doc in missing_additional if doc not in priority_items]
+
+    # Start email body
+    email_body = (
+        f"Hi,\n\n"
+        f"Thank you for your submission of the above referenced account for {association_name}. "
+        "This account has been reserved for your agency and is awaiting underwriting review."
     )
 
-    email_body = f"""Hi,
-
-Thank you for your submission of the above referenced account for {association_name}. This account has been reserved for your agency and is awaiting underwriting review."""
-
-    # Add preferred commission tier message if eligible
+    # Preferred commission tier
     if year_built >= 1994 and roof_replacement >= 2010:
-        email_body += """
+        email_body += (
+            "\n\nBased on the risk characteristics, it appears that this account may qualify for our preferred commission tier. "
+            "Eligibility for the preferred commission tier will be confirmed during the underwriting process."
+        )
 
-Based on the risk characteristics, it appears that this account may qualify for our preferred commission tier. 
-Eligibility for the preferred commission tier will be confirmed during the underwriting process."""
-
-    # Add missing document requirements if any
-    if missing_additional_docs or premiums_missing:
-        email_body += """
-
-The following additional documents are needed to proceed with the quote review process. The starred items are required to quote. Please send at your earliest convenience."""
-        
-        # Get sorted documents
-        sorted_docs = sort_additional_docs(missing_additional_docs)
-        
-        # Process documents in order with premium insertion
-        for doc in sorted_docs:
-            doc_name = doc.split(':')[0].strip()
-            
-            # Add the document
+    # List missing additional docs
+    if priority_to_list or rest_to_list:
+        email_body += (
+            "\n\nThe following additional documents are needed to proceed with the quote review process. "
+            "Please send at your earliest convenience:"
+        )
+        # Priority first
+        for doc in priority_to_list:
             email_body += f"\n• {doc}"
-            
-            # Add premiums after Flood Policy
-            if premiums_missing and doc_name == "Flood Policy":
-                email_body += "\n• Target, Renewal and Expiring Premiums"
+        # Then all others in UI order
+        for doc in rest_to_list:
+            email_body += f"\n• {doc}"
 
+        # Add deadline and closing note
         if deadline_text == "as soon as possible":
-            email_body += f"""
-
-Please supply the items listed above as soon as possible to retain your account reservation. 
-
-If not received by the requested date, please be aware the reservation will be released. Do not hesitate to contact us if you encounter any challenges or need additional time to obtain the requested documents."""
+            email_body += (
+                "\n\nPlease supply the items listed above as soon as possible to retain your account reservation. "
+                "If not received by the requested date, the reservation will be released. "
+                "Contact us if you need additional time or assistance."
+            )
         else:
-            email_body += f"""
+            email_body += (
+                f"\n\nPlease supply the items listed above {deadline_text} to retain your account reservation. "
+                "If not received by the requested date, the reservation will be released. "
+                "Contact us if you need additional time or assistance."
+            )
 
-Please supply the items listed above {deadline_text} to retain your account reservation. 
-
-If not received by the requested date, please be aware the reservation will be released. Do not hesitate to contact us if you encounter any challenges or need additional time to obtain the requested documents."""
-
-    email_body += """
-
-Kindest Regards,"""
-
+    # Sign-off
+    email_body += "\n\nKindest Regards,"
     return email_body
