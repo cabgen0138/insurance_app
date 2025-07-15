@@ -5,11 +5,10 @@ AGENCIES = [
     "Acentria – Destin", "Acentria - Panama City", "Acentria - Port St Lucie", "Acrisure - Fletcher & Co",
     "Acrisure - Gambrell & Sturges", "Acrisure – Gulfshore", "AJG – Harden", "Alliant", "AP – IRMS",
     "AP - Lake Mary", "AP - Mack Mack & Waltz", "AP – Ranew", "Briercheck", "Brown & Brown - Daytona Beach",
-    "Brown & Brown – Jacksonville", "Brown & Brown – Sarasota", "CBIZ Insurance", "Chapman Insurance",
+    "Brown & Brown – Jacksonville", "Brown & Brown – Sarasota", "Brown & Brown – West Palm", "Chapman Insurance",
     "Cothrom", "Darr Schackow", "Fisher Brown", "Franklin Hamilton", "Herbie Wiles",
     "Higginbotham - McMahon Hadder", "IJR - Advanced Insurance", "Marsh & McLennan – Bouchard",
-    "McGriff - St Pete", "Plastridge", "RTI", "Sihle - Altamonte Springs", "Thompson Baker",
-    "USI - Coral Gables", "USI – Tampa", "Wellhouse", "Unknown"
+    "McGriff - St Pete", "Plastridge", "RTI", "Sihle - Altamonte Springs", "Thompson Baker", "USI – Tampa", "Wellhouse", "Unknown"
 ]
 
 COUNTIES = [

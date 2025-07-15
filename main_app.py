@@ -43,7 +43,7 @@ def add_to_history(association_name, agency, status):
 
 def main():
     st.set_page_config(
-        page_title="Cabrillo Submission Clearance",
+        page_title="Submission Clearance",
         page_icon="📋",
         layout="wide"
     )
@@ -55,7 +55,7 @@ def main():
     initialize_history()
         
     # Main content
-    st.title("Cabrillo Submission Clearance")
+    st.title("Submission Clearance")
     
     # Render appropriate step
     if st.session_state.step == 1:

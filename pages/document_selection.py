@@ -36,9 +36,9 @@ def get_additional_docs(has_supplemental: bool = False) -> list:
         applicable_docs.append(("Association Documents", "Declarations and Bylaws"))
     if st.session_state.year_built <= 2017:
         applicable_docs.append(("Additional Loss History", "2017-2020 loss runs, if available"))
-    if st.session_state.stories >= 3 and (current_year - st.session_state.year_built) >= 25:
+    if st.session_state.stories >= 3 and (current_year - st.session_state.year_built) >= 30:
         applicable_docs.append(("Structural Inspection", "Most recent structural or milestone inspection"))
-    if (current_year - st.session_state.year_built) >= 40:
+    if year_built < 1980:
         applicable_docs.append(("Building Updates", "Provide documentation confirming the condition, type, and history of any updates to wiring and plumbing systems"))
     if (current_year - st.session_state.roof_replacement) >= 15:
         applicable_docs.append(("Roof Condition Inspection", "Provide a current roof condition inspection for all roofs that are 15+ years old"))
